@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="es">
-      <body className="bg-slate-50 font-sans text-slate-950">{children}</body>
+      <body className="gradient-background font-sans text-slate-950">{children}</body>
     </html>
   );
 }

@@ -1,1 +1,47 @@
 @import "tailwindcss";
+
+.gradient-background {
+  position: relative;
+  min-height: 100dvh;
+  isolation: isolate;
+  background: #080e1b;
+}
+
+.gradient-background::before {
+  content: "";
+  position: fixed;
+  inset: -15%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse at 15% 20%, #0d948866 0%, transparent 40%),
+    radial-gradient(ellipse at 85% 75%, #6366f14d 0%, transparent 45%),
+    radial-gradient(ellipse at 50% 45%, #193354 0%, transparent 65%);
+  animation: gradient-drift 28s ease-in-out infinite alternate;
+}
+
+.gradient-background::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image: radial-gradient(#cbd5e126 0.7px, transparent 0.7px);
+  background-size: 28px 28px;
+  mask-image: linear-gradient(to bottom, transparent, #000 50%, transparent);
+}
+
+@keyframes gradient-drift {
+  from {
+    transform: translate(-3%, -2%) scale(1.02);
+  }
+  to {
+    transform: translate(3%, 2%) scale(1.08);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gradient-background::before {
+    animation: none;
+  }
+}

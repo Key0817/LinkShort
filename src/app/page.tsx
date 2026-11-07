@@ -9,7 +9,14 @@ export default function Home() {
   const [error, setError] = useState("");
   const [copyMessage, setCopyMessage] = useState("");
   const submitting = useRef(false);
+  const sourceInput = useRef<HTMLInputElement>(null);
   const resultInput = useRef<HTMLInputElement>(null);
+
+  function clearUrl() {
+    setUrl("");
+    setError("");
+    sourceInput.current?.focus();
+  }
 
   async function shorten(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -57,15 +64,27 @@ export default function Home() {
   }
   return (
     <main className="mx-auto flex min-h-dvh max-w-xl flex-col justify-center gap-5 px-5 py-12">
-      <header>
+      <header className="text-white">
         <h1 className="text-4xl font-bold tracking-tight">Acorta tu enlace</h1>
-        <p className="mt-2 text-slate-600">Convierte una URL larga en un enlace fácil de compartir.</p>
+        <p className="mt-2 text-sky-100">Convierte una URL larga en un enlace fácil de compartir.</p>
       </header>
 
       <form onSubmit={shorten} aria-busy={loading} className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm" aria-label="Acortar enlace">
-        <label htmlFor="url" className="text-sm font-semibold">Enlace original</label>
+        <div className="flex items-center justify-between gap-3">
+          <label htmlFor="url" className="text-sm font-semibold">Enlace original</label>
+          <button
+            type="button"
+            onClick={clearUrl}
+            disabled={!url || loading}
+            aria-label="Limpiar enlace original"
+            className="rounded px-2 py-1 text-sm font-medium text-sky-700 hover:bg-sky-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-sky-700 disabled:cursor-default disabled:text-slate-400 disabled:hover:bg-transparent"
+          >
+            Limpiar
+          </button>
+        </div>
         <div className="mt-2 flex flex-col gap-3 sm:flex-row">
           <input
+            ref={sourceInput}
             id="url"
             type="url"
             name="url"
