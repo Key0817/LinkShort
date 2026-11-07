@@ -29,6 +29,7 @@ export async function POST(request: Request): Promise<Response> {
     return Response.json({ error: "Ingresa una URL absoluta HTTP o HTTPS válida." }, { status: 400 });
   }
 
+  let stage = "configuración de APP_BASE_URL";
   try {
     const baseUrl = new URL(process.env.APP_BASE_URL ?? "");
     if (
@@ -38,6 +39,7 @@ export async function POST(request: Request): Promise<Response> {
     ) {
       throw new Error("APP_BASE_URL inválida");
     }
+    stage = "creación en Firestore";
     const code = await createShortLink(destination.href);
     return Response.json({
       code,
@@ -48,6 +50,18 @@ export async function POST(request: Request): Promise<Response> {
     if (error instanceof CodeGenerationError) {
       return Response.json({ error: "Intenta de nuevo en unos momentos." }, { status: 503 });
     }
-    return Response.json({ error: "No se pudo crear el enlace." }, { status: 500 });
+    const code = error && typeof error === "object" && "code" in error ? error.code : undefined;
+    const safeCode = typeof code === "number" || [
+      "app/invalid-credential", "app/invalid-app-options", "app/invalid-argument",
+      "ENOTFOUND", "ECONNREFUSED", "ETIMEDOUT",
+    ].includes(String(code)) ? code : "no disponible";
+    const message = error instanceof Error ? error.message : "";
+    const networkError = message.match(/\b(ENOTFOUND|ECONNREFUSED|ETIMEDOUT|ENETUNREACH)\b/)?.[1];
+    const diagnostic = { stage, code: safeCode, ...(networkError ? { networkError } : {}) };
+    console.error("POST /api/links falló", diagnostic);
+    return Response.json({
+      error: "No se pudo crear el enlace.",
+      ...(process.env.NODE_ENV === "development" ? { diagnostic } : {}),
+    }, { status: 500 });
   }
 }
