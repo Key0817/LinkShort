@@ -2,8 +2,12 @@ import assert from "node:assert/strict";
 import { mock, test } from "node:test";
 
 let save;
+let consumeQuota = async () => 0;
 mock.module("../src/lib/links/repository.ts", {
   namedExports: { createLink: (...args) => save(...args) },
+});
+mock.module("../src/lib/links/rate-limit.ts", {
+  namedExports: { consumeCreateQuota: (...args) => consumeQuota(...args) },
 });
 
 const { POST } = await import("../src/app/api/links/route.ts");
@@ -91,5 +95,28 @@ test("valida APP_BASE_URL antes de escribir", async () => {
     assert.equal((await POST(request({ url: "https://example.com/" }))).status, 500);
   } finally {
     process.env.APP_BASE_URL = previous;
+  }
+});
+
+test("devuelve 429 con Retry-After y no crea el enlace cuando se agota la cuota", async () => {
+  save = () => assert.fail("No debe crear el enlace");
+  consumeQuota = async () => 30;
+  try {
+    const response = await POST(request({ url: "https://example.com/" }));
+    assert.equal(response.status, 429);
+    assert.equal(response.headers.get("retry-after"), "30");
+    assert.equal(response.headers.get("cache-control"), "no-store");
+  } finally {
+    consumeQuota = async () => 0;
+  }
+});
+
+test("devuelve 500 y no crea el enlace si falla el contador de solicitudes", async () => {
+  save = () => assert.fail("No debe crear el enlace");
+  consumeQuota = async () => { throw new Error("database unavailable"); };
+  try {
+    assert.equal((await POST(request({ url: "https://example.com/" }))).status, 500);
+  } finally {
+    consumeQuota = async () => 0;
   }
 });

@@ -1,4 +1,5 @@
 import { CodeGenerationError, createShortLink } from "../../../lib/links/create-short-link.ts";
+import { consumeCreateQuota } from "../../../lib/links/rate-limit.ts";
 
 export const runtime = "nodejs";
 
@@ -38,6 +39,16 @@ export async function POST(request: Request): Promise<Response> {
       baseUrl.pathname !== "/" || baseUrl.search || baseUrl.hash
     ) {
       throw new Error("APP_BASE_URL inválida");
+    }
+    stage = "límite de solicitudes";
+    const retryAfter = await consumeCreateQuota(request);
+    if (retryAfter > 0) {
+      return Response.json({
+        error: "Has alcanzado el límite de 10 solicitudes por minuto. Intenta de nuevo en unos momentos.",
+      }, {
+        status: 429,
+        headers: { "Retry-After": String(retryAfter), "Cache-Control": "no-store" },
+      });
     }
     stage = "creación en Firestore";
     const code = await createShortLink(destination.href);

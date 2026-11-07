@@ -8,7 +8,7 @@
   },
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
     "start": "next start",
     "lint": "eslint .",
     "test": "node --conditions=react-server --experimental-strip-types --experimental-test-module-mocks --test tests/*.test.mjs",
