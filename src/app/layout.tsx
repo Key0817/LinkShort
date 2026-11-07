@@ -7,6 +7,7 @@ export const metadata: Metadata = {
   title: "Link Short",
   description: "Acorta tus enlaces y compártelos fácilmente con Link Short.",
   openGraph: {
+    url: "/",
     title: "Link Short",
     description: "Acorta tus enlaces y compártelos fácilmente con Link Short.",
     siteName: "Link Short",
@@ -17,7 +18,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Link Short",
     description: "Acorta tus enlaces y compártelos fácilmente con Link Short.",
-    images: ["/opengraph-image.png"],
+    images: ["/opengraph-image.jpg"],
   },
 };
 
